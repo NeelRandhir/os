@@ -1,0 +1,66 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2639
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #include<unistd.h>\
+#include<pthread.h>\
+#include<stdlib.h>\
+#include<stdio.h>\
+\
+\
+sem_t,r,w;\
+\
+int rdct=0;\
+void*reader(void*arg)\
+\{\
+    int n=(int)arg;\
+    sem_wait(&r);\
+    rdct++;\
+    if(rdct==1)\
+    \{\
+        sem_wait(&w);\
+    \}\
+    sem_post(&r);\
+    printf("\\n Reader number=%d",n);\
+    sem_wait(&r);\
+    rdct--;\
+    if(rdct==0)\
+    \{\
+        sem_post(&w);\
+    \}\
+    sem_post(&r);\
+\}\
+void*writer(void*arg)\
+\{\
+    int n=(int)arg;\
+    sem_wait(&w);\
+    printf("\\n Writer Number=%d",n);\
+    sem_post(&w);\
+\}\
+int main() \
+   \{\
+       pthread_t re[10],wr[10];\
+       int i;\
+       sem_init(&r,0,1);\
+       sem_init(&w,0,1);\
+       for(i=0;i<10;i++)\
+       \{\
+           pthread_create(&re[i],NULL,reader,(void*)i);\
+       \}\
+       for(i=0;i<10;i++)\
+       \{\
+        pthread_create(&wr[i],NULL,writer,(void*)i);\
+       \}\
+       for(i=0;i<10;i++)\
+       \{\
+           pthread_join(re[i],NULL);\
+       \}\
+       for(i=0;i<10;i++)\
+       \{\
+           pthread_join(wr[i],NULL);\
+       \}\
+       \
+   \}}
